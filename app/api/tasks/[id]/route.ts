@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseWithToken } from '@/lib/supabase';
 import { nextDeadline } from '@/lib/tasks';
+import { sendPushToUser } from '@/lib/push';
 
 function getToken(req: NextRequest): string | null {
   const auth = req.headers.get('Authorization');
@@ -68,6 +69,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Trimite push daca task-ul a fost editat (nu doar marcat finalizat) si deadline-ul e azi
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isEdit = allowed.title !== undefined || allowed.deadline !== undefined || allowed.time !== undefined;
+  if (isEdit && data.deadline === todayStr && data.status === 'pending') {
+    sendPushToUser(data.user_id, `📅 ${data.title}`, 'Task actualizat — deadline azi!').catch(() => {});
+  }
 
   // Daca e marcat finalizat si are recurenta, creeaza urmatoarea aparitie
   if (body.status === 'completed' && data.recurrence) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseWithToken } from '@/lib/supabase';
+import { sendPushToUser } from '@/lib/push';
 
 function getToken(req: NextRequest): string | null {
   const auth = req.headers.get('Authorization');
@@ -71,5 +72,11 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (data.deadline === todayStr) {
+    sendPushToUser(user.id, `📅 ${data.title}`, 'Task nou cu deadline azi!').catch(() => {});
+  }
+
   return NextResponse.json(data, { status: 201 });
 }
