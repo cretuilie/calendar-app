@@ -12,50 +12,42 @@ export default function DynamicFavicon() {
 
     const day = new Date().getDate().toString();
 
-    // Fundal alb cu colt rotunjite
+    // Fundal alb
     ctx.fillStyle = '#ffffff';
-    roundRect(ctx, 0, 0, 64, 64, 10);
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 64, 64, 8);
     ctx.fill();
 
-    // Banda rosie sus
+    // Banda indigo sus
     ctx.fillStyle = '#4f46e5';
-    roundRect(ctx, 0, 0, 64, 20, 10);
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 64, 22, [8, 8, 0, 0]);
     ctx.fill();
-    ctx.fillStyle = '#4f46e5';
-    ctx.fillRect(0, 10, 64, 10);
 
-    // Contur
-    ctx.strokeStyle = '#e5e7eb';
+    // Contur subtire
+    ctx.strokeStyle = '#d1d5db';
     ctx.lineWidth = 2;
-    roundRect(ctx, 1, 1, 62, 62, 10);
+    ctx.beginPath();
+    ctx.roundRect(1, 1, 62, 62, 8);
     ctx.stroke();
 
     // Numarul zilei
-    ctx.fillStyle = '#111827';
-    ctx.font = 'bold 36px system-ui, sans-serif';
+    ctx.fillStyle = '#1e1b4b';
+    ctx.font = 'bold 34px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(day, 32, 42);
+    ctx.fillText(day, 32, 46);
 
-    const link: HTMLLinkElement = document.querySelector("link[rel~='icon']") || document.createElement('link');
+    // Sterge TOATE favicon-urile existente si seteaza al nostru
+    document.querySelectorAll("link[rel*='icon']").forEach(el => el.remove());
+
+    const link = document.createElement('link');
     link.rel = 'icon';
+    link.type = 'image/png';
+    link.sizes = '64x64';
     link.href = canvas.toDataURL('image/png');
     document.head.appendChild(link);
   }, []);
 
   return null;
-}
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
 }

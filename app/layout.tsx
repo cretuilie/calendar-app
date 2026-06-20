@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Task Calendar Personalizat",
   description: "Taskurile tale, pe orice dispozitiv",
+  icons: { icon: 'data:,' },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
