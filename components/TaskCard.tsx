@@ -6,6 +6,7 @@ interface TaskCardProps {
   task: Task;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (task: Task) => void;
 }
 
 const LUNA_SCURTA = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -22,7 +23,7 @@ function zilePanaLaDeadline(deadline: string): number {
   return Math.round((d.getTime() - azi.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) {
+export default function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCardProps) {
   const zile = zilePanaLaDeadline(task.deadline);
   const intarziat = zile < 0 && task.status === 'pending';
   const completed = task.status === 'completed';
@@ -79,6 +80,15 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
               title="Marcheaza ca finalizat"
             >✓</button>
           )}
+          <button
+            onClick={() => onEdit(task)}
+            className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-indigo-400 hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 flex items-center justify-center transition-colors"
+            title="Editeaza task"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+              <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+            </svg>
+          </button>
           <button
             onClick={() => onDelete(task.id)}
             className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-red-400 hover:bg-red-50 text-gray-500 hover:text-red-600 flex items-center justify-center text-base font-bold transition-colors"

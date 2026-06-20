@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { CreateTaskData, Recurrence } from '@/lib/tasks';
+import { CreateTaskData, Recurrence, Task } from '@/lib/tasks';
 
 interface TaskFormProps {
   dataInitiala?: string;
+  task?: Task;
   onSave: (data: CreateTaskData) => Promise<void>;
   onClose: () => void;
 }
@@ -26,16 +27,27 @@ function toMinutes(value: number, unit: NotifyUnit): number {
   return value;
 }
 
-export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [deadline, setDeadline] = useState(dataInitiala ?? '');
-  const [ora, setOra] = useState('09');
-  const [minut, setMinut] = useState('00');
-  const [areOra, setAreOra] = useState(false);
-  const [notifyValue, setNotifyValue] = useState(14);
-  const [notifyUnit, setNotifyUnit] = useState<NotifyUnit>('zile');
-  const [recurrence, setRecurrence] = useState<Recurrence>(null);
+function fromMinutes(minutes: number): { value: number; unit: NotifyUnit } {
+  if (minutes >= 1440 && minutes % 1440 === 0) return { value: minutes / 1440, unit: 'zile' };
+  if (minutes >= 60 && minutes % 60 === 0) return { value: minutes / 60, unit: 'ore' };
+  return { value: minutes, unit: 'minute' };
+}
+
+export default function TaskForm({ dataInitiala, task, onSave, onClose }: TaskFormProps) {
+  const editMode = !!task;
+
+  const initNotify = task ? fromMinutes(task.notify_days_before) : { value: 14, unit: 'zile' as NotifyUnit };
+  const initTime = task?.time ? task.time.split(':') : ['09', '00'];
+
+  const [title, setTitle] = useState(task?.title ?? '');
+  const [description, setDescription] = useState(task?.description ?? '');
+  const [deadline, setDeadline] = useState(task?.deadline ?? dataInitiala ?? '');
+  const [ora, setOra] = useState(initTime[0]);
+  const [minut, setMinut] = useState(initTime[1]);
+  const [areOra, setAreOra] = useState(!!task?.time);
+  const [notifyValue, setNotifyValue] = useState(initNotify.value);
+  const [notifyUnit, setNotifyUnit] = useState<NotifyUnit>(initNotify.unit);
+  const [recurrence, setRecurrence] = useState<Recurrence>(task?.recurrence ?? null);
   const [loading, setLoading] = useState(false);
   const [eroare, setEroare] = useState('');
 
@@ -79,7 +91,7 @@ export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProp
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Task nou</h2>
+          <h2 className="text-xl font-bold text-gray-900">{editMode ? 'Editeaza task' : 'Task nou'}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-800 transition-colors text-xl font-light">×</button>
         </div>
 
@@ -112,13 +124,12 @@ export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProp
             <input
               type="date"
               value={deadline}
-              min={today}
+              min={editMode ? undefined : today}
               onChange={e => setDeadline(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-indigo-500 outline-none transition-colors text-sm text-gray-900"
             />
           </div>
 
-          {/* Ora si minute */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-semibold text-gray-800">Ora</label>
@@ -154,11 +165,8 @@ export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProp
             )}
           </div>
 
-          {/* Notificare */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-2">Notifica inainte de deadline</label>
-
-            {/* Toggle unitati */}
             <div className="flex rounded-xl border-2 border-gray-300 overflow-hidden mb-3">
               {NOTIFY_OPTIONS.map(({ unit, label }) => (
                 <button
@@ -174,8 +182,6 @@ export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProp
                 </button>
               ))}
             </div>
-
-            {/* Valoare + preview */}
             <div className="flex items-center gap-3">
               <input
                 type="range"
@@ -196,7 +202,6 @@ export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProp
             </div>
           </div>
 
-          {/* Recurenta */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-2">Repetare</label>
             <div className="grid grid-cols-4 gap-2">
@@ -236,7 +241,7 @@ export default function TaskForm({ dataInitiala, onSave, onClose }: TaskFormProp
               disabled={loading}
               className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
-              {loading ? 'Se salveaza...' : 'Salveaza task'}
+              {loading ? 'Se salveaza...' : editMode ? 'Salveaza modificarile' : 'Salveaza task'}
             </button>
           </div>
         </form>

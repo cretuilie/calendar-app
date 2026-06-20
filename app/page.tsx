@@ -19,6 +19,7 @@ export default function Home() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [dataSelectata, setDataSelectata] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [taskDeEditat, setTaskDeEditat] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Verifica sesiunea la mount
@@ -84,6 +85,24 @@ export default function Home() {
     });
     if (!res.ok) throw new Error('Eroare salvare');
     await fetchTasks();
+  };
+
+  const handleUpdateTask = async (data: CreateTaskData) => {
+    if (!taskDeEditat) return;
+    const res = await apiFetch(`/api/tasks/${taskDeEditat.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...data,
+        time: data.time ?? null,
+        description: data.description ?? null,
+        recurrence: data.recurrence ?? null,
+      }),
+    });
+    if (!res.ok) throw new Error('Eroare actualizare');
+    const updated: Task = await res.json();
+    setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+    setAllTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+    setTaskDeEditat(null);
   };
 
   const handleComplete = async (id: string) => {
@@ -176,6 +195,7 @@ export default function Home() {
             dataSelectata={dataSelectata}
             onComplete={handleComplete}
             onDelete={handleDelete}
+            onEdit={task => setTaskDeEditat(task)}
             onAdauga={() => setShowForm(true)}
           />
         </div>
@@ -186,6 +206,14 @@ export default function Home() {
           dataInitiala={dataSelectata ?? undefined}
           onSave={handleSaveTask}
           onClose={() => setShowForm(false)}
+        />
+      )}
+
+      {taskDeEditat && (
+        <TaskForm
+          task={taskDeEditat}
+          onSave={handleUpdateTask}
+          onClose={() => setTaskDeEditat(null)}
         />
       )}
     </div>

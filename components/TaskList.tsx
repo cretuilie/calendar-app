@@ -8,6 +8,7 @@ interface TaskListProps {
   dataSelectata: string | null;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (task: Task) => void;
   onAdauga: () => void;
 }
 
@@ -30,7 +31,7 @@ function formatDataGrup(dateStr: string): string {
   return `${ZI_SAPTAMANA[d.getDay()]} — ${zi} ${numeLuna}`;
 }
 
-export default function TaskList({ allTasks, dataSelectata, onComplete, onDelete, onAdauga }: TaskListProps) {
+export default function TaskList({ allTasks, dataSelectata, onComplete, onDelete, onEdit, onAdauga }: TaskListProps) {
   const azi = new Date(); azi.setHours(0, 0, 0, 0);
   const peste7 = new Date(azi); peste7.setDate(azi.getDate() + 6);
 
@@ -101,6 +102,7 @@ export default function TaskList({ allTasks, dataSelectata, onComplete, onDelete
                     task={task}
                     onComplete={onComplete}
                     onDelete={onDelete}
+                    onEdit={onEdit}
                   />
                 ))}
               </div>
