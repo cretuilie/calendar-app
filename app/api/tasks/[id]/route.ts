@@ -15,9 +15,54 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json();
   const supabase = createSupabaseWithToken(token);
 
+  // Whitelist campuri permise — previne suprascrierea user_id sau altor campuri sensibile
+  const allowed: Record<string, unknown> = {};
+  if (body.status !== undefined) {
+    if (!['pending', 'completed'].includes(body.status)) {
+      return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
+    }
+    allowed.status = body.status;
+  }
+  if (body.title !== undefined) {
+    if (typeof body.title !== 'string' || body.title.trim().length === 0 || body.title.length > 200) {
+      return NextResponse.json({ error: 'Titlu invalid' }, { status: 400 });
+    }
+    allowed.title = body.title.trim();
+  }
+  if (body.description !== undefined) allowed.description = body.description ? String(body.description).slice(0, 1000) : null;
+  if (body.deadline !== undefined) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(body.deadline)) {
+      return NextResponse.json({ error: 'Data invalida' }, { status: 400 });
+    }
+    allowed.deadline = body.deadline;
+  }
+  if (body.time !== undefined) {
+    if (body.time !== null && !/^\d{2}:\d{2}$/.test(body.time)) {
+      return NextResponse.json({ error: 'Ora invalida' }, { status: 400 });
+    }
+    allowed.time = body.time;
+  }
+  if (body.notify_days_before !== undefined) {
+    const n = Number(body.notify_days_before);
+    if (!Number.isInteger(n) || n < 0 || n > 525600) {
+      return NextResponse.json({ error: 'Valoare notificare invalida' }, { status: 400 });
+    }
+    allowed.notify_days_before = n;
+  }
+  if (body.recurrence !== undefined) {
+    if (body.recurrence !== null && !['saptamanal', 'lunar', 'anual'].includes(body.recurrence)) {
+      return NextResponse.json({ error: 'Recurenta invalida' }, { status: 400 });
+    }
+    allowed.recurrence = body.recurrence;
+  }
+
+  if (Object.keys(allowed).length === 0) {
+    return NextResponse.json({ error: 'Niciun camp valid de actualizat' }, { status: 400 });
+  }
+
   const { data, error } = await supabase
     .from('tasks')
-    .update(body)
+    .update(allowed)
     .eq('id', id)
     .select()
     .single();

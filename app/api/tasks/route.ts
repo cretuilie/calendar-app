@@ -39,18 +39,31 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { title, description, deadline, time, notify_days_before, recurrence } = body;
 
-  if (!title || !deadline) {
-    return NextResponse.json({ error: 'title si deadline sunt obligatorii' }, { status: 400 });
+  if (!title || typeof title !== 'string' || title.trim().length === 0 || title.length > 200) {
+    return NextResponse.json({ error: 'Titlu obligatoriu (max 200 caractere)' }, { status: 400 });
+  }
+  if (!deadline || !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
+    return NextResponse.json({ error: 'Data limita invalida' }, { status: 400 });
+  }
+  if (time !== undefined && time !== null && !/^\d{2}:\d{2}$/.test(time)) {
+    return NextResponse.json({ error: 'Format ora invalid (HH:MM)' }, { status: 400 });
+  }
+  if (recurrence !== undefined && recurrence !== null && !['saptamanal', 'lunar', 'anual'].includes(recurrence)) {
+    return NextResponse.json({ error: 'Recurenta invalida' }, { status: 400 });
+  }
+  const notifyMin = notify_days_before !== undefined ? Number(notify_days_before) : 20160;
+  if (!Number.isInteger(notifyMin) || notifyMin < 0 || notifyMin > 525600) {
+    return NextResponse.json({ error: 'Valoare notificare invalida' }, { status: 400 });
   }
 
   const { data, error } = await supabase
     .from('tasks')
     .insert({
-      title,
-      description: description ?? null,
+      title: title.trim(),
+      description: description ? String(description).slice(0, 1000) : null,
       deadline,
       time: time ?? null,
-      notify_days_before: notify_days_before ?? 20160,
+      notify_days_before: notifyMin,
       recurrence: recurrence ?? null,
       user_id: user.id,
     })
