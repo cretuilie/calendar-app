@@ -1,6 +1,6 @@
 'use client';
 
-import { Task } from '@/lib/tasks';
+import { Task, isOverdue } from '@/lib/tasks';
 
 const ZI_SCURTA = ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'];
 const LUNA_LUNGA = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie', 'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie'];
@@ -81,7 +81,7 @@ export default function Calendar({ tasks, dataSelectata, onSelectData, luna, an,
           const taskuriZi = tasksByDate[dateStr] ?? [];
           const arePending = taskuriZi.some(t => t.status === 'pending');
           const areCompleted = taskuriZi.some(t => t.status === 'completed');
-          const areIntarziate = taskuriZi.some(t => t.status === 'pending' && t.deadline < toLocalDateString(azi));
+          const areIntarziate = taskuriZi.some(t => isOverdue(t));
 
           return (
             <button

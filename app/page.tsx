@@ -9,7 +9,7 @@ import TaskCard from '@/components/TaskCard';
 import TaskForm from '@/components/TaskForm';
 import NotificationBanner from '@/components/NotificationBanner';
 import PushNotificationManager from '@/components/PushNotificationManager';
-import { Task, CreateTaskData } from '@/lib/tasks';
+import { Task, CreateTaskData, isOverdue } from '@/lib/tasks';
 
 export default function Home() {
   const router = useRouter();
@@ -212,8 +212,8 @@ export default function Home() {
             {!loading && (() => {
               const todayStr = new Date().toISOString().split('T')[0];
               const completedTasks = tasks.filter(t => t.status === 'completed');
-              const pendingTasks = tasks.filter(t => t.status === 'pending' && t.deadline >= todayStr);
-              const overdueTasks = tasks.filter(t => t.status === 'pending' && t.deadline < todayStr);
+              const overdueTasks = tasks.filter(t => isOverdue(t));
+              const pendingTasks = tasks.filter(t => t.status === 'pending' && !isOverdue(t));
               const listaVizibila = expandedStat === 'all' ? tasks
                 : expandedStat === 'completed' ? completedTasks
                 : expandedStat === 'pending' ? pendingTasks
