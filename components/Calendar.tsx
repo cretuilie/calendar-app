@@ -92,6 +92,8 @@ export default function Calendar({ tasks, dataSelectata, onSelectData, luna, an,
                   ? 'bg-indigo-600 text-white shadow-md scale-105'
                   : esteAzi
                   ? 'border-2 border-indigo-500 text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+                  : areIntarziate
+                  ? 'border-2 border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
                   : 'hover:bg-gray-100 border-2 border-transparent text-gray-800'}`}
             >
               <span>{zi.getDate()}</span>

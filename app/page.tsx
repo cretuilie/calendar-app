@@ -23,7 +23,7 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [taskDeEditat, setTaskDeEditat] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedStat, setExpandedStat] = useState<'all' | 'completed' | 'pending' | null>(null);
+  const [expandedStat, setExpandedStat] = useState<'all' | 'completed' | 'pending' | 'overdue' | null>(null);
 
   // Verifica sesiunea la mount
   useEffect(() => {
@@ -210,15 +210,18 @@ export default function Home() {
             })()}
 
             {!loading && (() => {
+              const todayStr = new Date().toISOString().split('T')[0];
               const completedTasks = tasks.filter(t => t.status === 'completed');
-              const pendingTasks = tasks.filter(t => t.status === 'pending');
+              const pendingTasks = tasks.filter(t => t.status === 'pending' && t.deadline >= todayStr);
+              const overdueTasks = tasks.filter(t => t.status === 'pending' && t.deadline < todayStr);
               const listaVizibila = expandedStat === 'all' ? tasks
                 : expandedStat === 'completed' ? completedTasks
                 : expandedStat === 'pending' ? pendingTasks
+                : expandedStat === 'overdue' ? overdueTasks
                 : [];
 
               const statCard = (
-                key: 'all' | 'completed' | 'pending',
+                key: 'all' | 'completed' | 'pending' | 'overdue',
                 count: number,
                 label: string,
                 colorClass: string
@@ -240,17 +243,18 @@ export default function Home() {
 
               return (
                 <>
-                  <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {statCard('all', tasks.length, 'Total luna', 'text-gray-900')}
                     {statCard('completed', completedTasks.length, 'Finalizate', 'text-green-600')}
                     {statCard('pending', pendingTasks.length, 'In asteptare', 'text-indigo-600')}
+                    {statCard('overdue', overdueTasks.length, 'Intarziate', 'text-red-600')}
                   </div>
 
                   {expandedStat && (
                     <div className="mt-3 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                         <span className="text-sm font-semibold text-gray-700">
-                          {expandedStat === 'all' ? 'Toate taskurile lunii' : expandedStat === 'completed' ? 'Taskuri finalizate' : 'Taskuri in asteptare'}
+                          {expandedStat === 'all' ? 'Toate taskurile lunii' : expandedStat === 'completed' ? 'Taskuri finalizate' : expandedStat === 'overdue' ? 'Taskuri intarziate' : 'Taskuri in asteptare'}
                           <span className="ml-2 text-xs font-normal text-gray-400">{listaVizibila.length} taskuri</span>
                         </span>
                         <button onClick={() => setExpandedStat(null)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
