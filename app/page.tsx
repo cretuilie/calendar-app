@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Calendar from '@/components/Calendar';
 import TaskList from '@/components/TaskList';
+import TaskCard from '@/components/TaskCard';
 import TaskForm from '@/components/TaskForm';
 import NotificationBanner from '@/components/NotificationBanner';
 import PushNotificationManager from '@/components/PushNotificationManager';
@@ -22,6 +23,7 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [taskDeEditat, setTaskDeEditat] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedStat, setExpandedStat] = useState<'all' | 'completed' | 'pending' | null>(null);
 
   // Verifica sesiunea la mount
   useEffect(() => {
@@ -170,26 +172,72 @@ export default function Home() {
               onLunaInapoi={handleLunaInapoi}
             />
 
-            {!loading && (
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-white rounded-xl border border-gray-200 p-3 text-center shadow-sm">
-                  <div className="text-2xl font-bold text-gray-900">{tasks.length}</div>
-                  <div className="text-xs text-gray-500 font-medium mt-0.5">Total luna</div>
-                </div>
-                <div className="bg-white rounded-xl border border-gray-200 p-3 text-center shadow-sm">
-                  <div className="text-2xl font-bold text-green-600">
-                    {tasks.filter(t => t.status === 'completed').length}
+            {!loading && (() => {
+              const completedTasks = tasks.filter(t => t.status === 'completed');
+              const pendingTasks = tasks.filter(t => t.status === 'pending');
+              const listaVizibila = expandedStat === 'all' ? tasks
+                : expandedStat === 'completed' ? completedTasks
+                : expandedStat === 'pending' ? pendingTasks
+                : [];
+
+              const statCard = (
+                key: 'all' | 'completed' | 'pending',
+                count: number,
+                label: string,
+                colorClass: string
+              ) => {
+                const activ = expandedStat === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setExpandedStat(activ ? null : key)}
+                    className={`bg-white rounded-xl border-2 p-3 text-center shadow-sm transition-all
+                      ${activ ? 'border-indigo-400 shadow-md' : 'border-gray-200 hover:border-indigo-200 hover:shadow'}`}
+                  >
+                    <div className={`text-2xl font-bold ${colorClass}`}>{count}</div>
+                    <div className="text-xs text-gray-500 font-medium mt-0.5">{label}</div>
+                    <div className="text-xs mt-1">{activ ? '▲' : '▼'}</div>
+                  </button>
+                );
+              };
+
+              return (
+                <>
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    {statCard('all', tasks.length, 'Total luna', 'text-gray-900')}
+                    {statCard('completed', completedTasks.length, 'Finalizate', 'text-green-600')}
+                    {statCard('pending', pendingTasks.length, 'In asteptare', 'text-indigo-600')}
                   </div>
-                  <div className="text-xs text-gray-500 font-medium mt-0.5">Finalizate</div>
-                </div>
-                <div className="bg-white rounded-xl border border-gray-200 p-3 text-center shadow-sm">
-                  <div className="text-2xl font-bold text-indigo-600">
-                    {tasks.filter(t => t.status === 'pending').length}
-                  </div>
-                  <div className="text-xs text-gray-500 font-medium mt-0.5">In asteptare</div>
-                </div>
-              </div>
-            )}
+
+                  {expandedStat && (
+                    <div className="mt-3 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-gray-700">
+                          {expandedStat === 'all' ? 'Toate taskurile lunii' : expandedStat === 'completed' ? 'Taskuri finalizate' : 'Taskuri in asteptare'}
+                          <span className="ml-2 text-xs font-normal text-gray-400">{listaVizibila.length} taskuri</span>
+                        </span>
+                        <button onClick={() => setExpandedStat(null)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+                      </div>
+                      {listaVizibila.length === 0 ? (
+                        <p className="text-sm text-gray-400 text-center py-6">Niciun task</p>
+                      ) : (
+                        <div className="flex flex-col gap-2 p-3 max-h-72 overflow-y-auto">
+                          {[...listaVizibila].sort((a, b) => a.deadline.localeCompare(b.deadline)).map(task => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              onComplete={handleComplete}
+                              onDelete={handleDelete}
+                              onEdit={t => setTaskDeEditat(t)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           <TaskList
