@@ -92,11 +92,13 @@ export default function Home() {
       body: JSON.stringify({ status: 'completed' }),
     });
     setTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+    setAllTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
   };
 
   const handleDelete = async (id: string) => {
     await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
     setTasks(prev => prev.filter(t => t.id !== id));
+    setAllTasks(prev => prev.filter(t => t.id !== id));
   };
 
   const handleSignOut = async () => {
@@ -121,15 +123,6 @@ export default function Home() {
             <h1 className="text-xl font-bold text-gray-900">Task Calendar Personalizat</h1>
           </div>
           <div className="flex items-center gap-3">
-            {dataSelectata && (
-              <button
-                onClick={() => setShowForm(true)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors"
-              >
-                <span className="text-lg leading-none">+</span>
-                Task nou
-              </button>
-            )}
             <button
               onClick={handleSignOut}
               className="px-3 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
@@ -179,7 +172,7 @@ export default function Home() {
           </div>
 
           <TaskList
-            tasks={tasks}
+            allTasks={allTasks}
             dataSelectata={dataSelectata}
             onComplete={handleComplete}
             onDelete={handleDelete}
