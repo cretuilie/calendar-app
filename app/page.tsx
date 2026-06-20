@@ -7,6 +7,7 @@ import Calendar from '@/components/Calendar';
 import TaskList from '@/components/TaskList';
 import TaskForm from '@/components/TaskForm';
 import NotificationBanner from '@/components/NotificationBanner';
+import PushNotificationManager from '@/components/PushNotificationManager';
 import { Task, CreateTaskData } from '@/lib/tasks';
 
 export default function Home() {
@@ -142,6 +143,7 @@ export default function Home() {
             <h1 className="text-xl font-bold text-gray-900">Task Calendar Personalizat</h1>
           </div>
           <div className="flex items-center gap-3">
+            <PushNotificationManager token={token} />
             <button
               onClick={handleSignOut}
               className="px-3 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
