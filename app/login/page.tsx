@@ -91,9 +91,9 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder={mode === 'signup' ? 'Minim 6 caractere' : '••••••••'}
+                  placeholder={mode === 'signup' ? 'Minim 8 caractere' : '••••••••'}
                   required
-                  minLength={6}
+                  minLength={8}
                   className="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-xl focus:border-indigo-500 outline-none transition-colors text-sm text-gray-900"
                 />
                 <button
