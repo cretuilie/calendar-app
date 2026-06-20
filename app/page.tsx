@@ -71,6 +71,10 @@ export default function Home() {
     apiFetch('/api/tasks').then(r => r.json()).then(d => setAllTasks(Array.isArray(d) ? d : []));
   }, [tasks, token, apiFetch]);
 
+  const handleSelectData = (data: string) => {
+    setDataSelectata(prev => prev === data ? null : data);
+  };
+
   const handleLunaInainte = () => {
     if (luna === 11) { setLuna(0); setAn(an + 1); }
     else setLuna(luna + 1);
@@ -165,12 +169,45 @@ export default function Home() {
             <Calendar
               tasks={tasks}
               dataSelectata={dataSelectata}
-              onSelectData={setDataSelectata}
+              onSelectData={handleSelectData}
               luna={luna}
               an={an}
               onLunaInainte={handleLunaInainte}
               onLunaInapoi={handleLunaInapoi}
             />
+
+            {dataSelectata && !loading && (() => {
+              const taskuriZi = tasks.filter(t => t.deadline === dataSelectata);
+              const [y, m, d] = dataSelectata.split('-').map(Number);
+              const LUNA_LUNGA = ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+              const dataFormatata = `${d} ${LUNA_LUNGA[m - 1]} ${y}`;
+              return (
+                <div className="mt-4 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">
+                      {dataFormatata}
+                      <span className="ml-2 text-xs font-normal text-gray-400">{taskuriZi.length} {taskuriZi.length === 1 ? 'task' : 'taskuri'}</span>
+                    </span>
+                    <button onClick={() => setDataSelectata(null)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+                  </div>
+                  {taskuriZi.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center py-6">Niciun task in aceasta zi</p>
+                  ) : (
+                    <div className="flex flex-col gap-2 p-3 max-h-72 overflow-y-auto">
+                      {[...taskuriZi].sort((a, b) => (a.time ?? '23:59').localeCompare(b.time ?? '23:59')).map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onComplete={handleComplete}
+                          onDelete={handleDelete}
+                          onEdit={t => setTaskDeEditat(t)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {!loading && (() => {
               const completedTasks = tasks.filter(t => t.status === 'completed');
