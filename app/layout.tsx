@@ -16,6 +16,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Task Calendar Personalizat",
   description: "Taskurile tale, pe orice dispozitiv",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Calendar",
+  },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({
