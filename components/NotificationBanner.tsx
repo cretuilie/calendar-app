@@ -36,12 +36,27 @@ function formatData(dateStr: string): string {
 export default function NotificationBanner({ tasks }: NotificationBannerProps) {
   const [vizibil, setVizibil] = useState(true);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
+  const [, setTick] = useState(0);
 
-  const urgente = tasks.filter(t => {
-    if (t.status === 'completed') return false;
-    const minuteRamase = minutePanaLaDeadline(t);
-    return minuteRamase >= 0 && minuteRamase <= t.notify_days_before;
-  });
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const pending = tasks.filter(t => t.status !== 'completed' && minutePanaLaDeadline(t) >= 0);
+  const deAzi = pending.filter(t => t.deadline === todayStr);
+  const urgente = deAzi.length > 0
+    ? deAzi
+    : (() => {
+        if (pending.length === 0) return [];
+        const minDeadline = pending.reduce((min, t) => t.deadline < min ? t.deadline : min, pending[0].deadline);
+        return pending.filter(t => t.deadline === minDeadline);
+      })();
+
+  useEffect(() => {
+    if (urgente.length > 0) setVizibil(true);
+  }, [urgente.length]);
 
   useEffect(() => {
     if ('Notification' in window) setNotifPermission(Notification.permission);

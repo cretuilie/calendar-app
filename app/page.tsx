@@ -64,12 +64,15 @@ export default function Home() {
     }
   }, [token, an, luna, apiFetch]);
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
-
-  useEffect(() => {
+  const fetchAllTasks = useCallback(async () => {
     if (!token) return;
-    apiFetch('/api/tasks').then(r => r.json()).then(d => setAllTasks(Array.isArray(d) ? d : []));
-  }, [tasks, token, apiFetch]);
+    const res = await apiFetch('/api/tasks');
+    const data = await res.json();
+    setAllTasks(Array.isArray(data) ? data : []);
+  }, [token, apiFetch]);
+
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+  useEffect(() => { fetchAllTasks(); }, [fetchAllTasks]);
 
   const handleSelectData = (data: string) => {
     setDataSelectata(prev => prev === data ? null : data);
@@ -91,7 +94,7 @@ export default function Home() {
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error('Eroare salvare');
-    await fetchTasks();
+    await Promise.all([fetchTasks(), fetchAllTasks()]);
   };
 
   const handleUpdateTask = async (data: CreateTaskData) => {
@@ -106,9 +109,7 @@ export default function Home() {
       }),
     });
     if (!res.ok) throw new Error('Eroare actualizare');
-    const updated: Task = await res.json();
-    setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
-    setAllTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+    await Promise.all([fetchTasks(), fetchAllTasks()]);
     setTaskDeEditat(null);
   };
 
@@ -117,14 +118,12 @@ export default function Home() {
       method: 'PATCH',
       body: JSON.stringify({ status: 'completed' }),
     });
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
-    setAllTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+    await Promise.all([fetchTasks(), fetchAllTasks()]);
   };
 
   const handleDelete = async (id: string) => {
     await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
-    setTasks(prev => prev.filter(t => t.id !== id));
-    setAllTasks(prev => prev.filter(t => t.id !== id));
+    await Promise.all([fetchTasks(), fetchAllTasks()]);
   };
 
   const handleSignOut = async () => {
