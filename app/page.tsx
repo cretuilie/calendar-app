@@ -88,6 +88,11 @@ export default function Home() {
     else setLuna(luna - 1);
   };
 
+  const handleAstazi = () => {
+    setLuna(today.getMonth());
+    setAn(today.getFullYear());
+  };
+
   const handleSaveTask = async (data: CreateTaskData) => {
     const res = await apiFetch('/api/tasks', {
       method: 'POST',
@@ -123,6 +128,19 @@ export default function Home() {
 
   const handleDelete = async (id: string) => {
     await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
+    await Promise.all([fetchTasks(), fetchAllTasks()]);
+  };
+
+  const handleSkip = async (id: string) => {
+    await apiFetch(`/api/tasks/${id}/skip`, { method: 'POST' });
+    await Promise.all([fetchTasks(), fetchAllTasks()]);
+  };
+
+  const handlePostpone = async (id: string, deadline: string) => {
+    await apiFetch(`/api/tasks/${id}/postpone`, {
+      method: 'POST',
+      body: JSON.stringify({ deadline }),
+    });
     await Promise.all([fetchTasks(), fetchAllTasks()]);
   };
 
@@ -173,6 +191,7 @@ export default function Home() {
               an={an}
               onLunaInainte={handleLunaInainte}
               onLunaInapoi={handleLunaInapoi}
+              onAstazi={handleAstazi}
             />
 
             {dataSelectata && !loading && (() => {
@@ -200,6 +219,8 @@ export default function Home() {
                           onComplete={handleComplete}
                           onDelete={handleDelete}
                           onEdit={t => setTaskDeEditat(t)}
+                          onSkip={handleSkip}
+                          onPostpone={handlePostpone}
                         />
                       ))}
                     </div>
@@ -269,6 +290,8 @@ export default function Home() {
                               onComplete={handleComplete}
                               onDelete={handleDelete}
                               onEdit={t => setTaskDeEditat(t)}
+                              onSkip={handleSkip}
+                              onPostpone={handlePostpone}
                             />
                           ))}
                         </div>
@@ -287,6 +310,8 @@ export default function Home() {
             onDelete={handleDelete}
             onEdit={task => setTaskDeEditat(task)}
             onAdauga={() => setShowForm(true)}
+            onSkip={handleSkip}
+            onPostpone={handlePostpone}
           />
         </div>
       </main>

@@ -28,15 +28,18 @@ interface CalendarProps {
   an: number;
   onLunaInainte: () => void;
   onLunaInapoi: () => void;
+  onAstazi: () => void;
 }
 
-export default function Calendar({ tasks, dataSelectata, onSelectData, luna, an, onLunaInainte, onLunaInapoi }: CalendarProps) {
+export default function Calendar({ tasks, dataSelectata, onSelectData, luna, an, onLunaInainte, onLunaInapoi, onAstazi }: CalendarProps) {
   const azi = new Date();
   const { zile, offsetLuni } = getZileLuna(an, luna);
 
   const lunaMax = new Date(azi.getFullYear(), azi.getMonth() + 24, 1);
+  const lunaMin = new Date(azi.getFullYear(), azi.getMonth() - 24, 1);
   const poateMergeInainte = new Date(an, luna + 1, 1) < lunaMax;
-  const poateMergeInapoi = !(an === azi.getFullYear() && luna === azi.getMonth());
+  const poateMergeInapoi = new Date(an, luna, 1) > lunaMin;
+  const esteLunaCurenta = an === azi.getFullYear() && luna === azi.getMonth();
 
   const tasksByDate = tasks.reduce<Record<string, Task[]>>((acc, t) => {
     acc[t.deadline] = acc[t.deadline] ?? [];
@@ -53,9 +56,17 @@ export default function Calendar({ tasks, dataSelectata, onSelectData, luna, an,
           disabled={!poateMergeInapoi}
           className="w-9 h-9 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-700 hover:border-indigo-500 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-bold"
         >‹</button>
-        <span className="font-bold text-gray-900 text-lg tracking-tight">
-          {LUNA_LUNGA[luna]} {an}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-gray-900 text-lg tracking-tight">
+            {LUNA_LUNGA[luna]} {an}
+          </span>
+          {!esteLunaCurenta && (
+            <button
+              onClick={onAstazi}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded-lg hover:bg-indigo-50 transition-colors"
+            >Azi</button>
+          )}
+        </div>
         <button
           onClick={onLunaInainte}
           disabled={!poateMergeInainte}

@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
       time: time ?? null,
       notify_days_before: notifyMin,
       recurrence: recurrence ?? null,
+      series_deadline: recurrence ? deadline : null,
       user_id: user.id,
     })
     .select()

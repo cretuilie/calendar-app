@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Task } from '@/lib/tasks';
 
 interface TaskCardProps {
@@ -7,6 +8,8 @@ interface TaskCardProps {
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
+  onSkip?: (id: string) => void;
+  onPostpone?: (id: string, deadline: string) => void;
 }
 
 const LUNA_SCURTA = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -23,10 +26,12 @@ function zilePanaLaDeadline(deadline: string): number {
   return Math.round((d.getTime() - azi.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export default function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCardProps) {
+export default function TaskCard({ task, onComplete, onDelete, onEdit, onSkip, onPostpone }: TaskCardProps) {
   const zile = zilePanaLaDeadline(task.deadline);
   const intarziat = zile < 0 && task.status === 'pending';
   const completed = task.status === 'completed';
+  const [showPostpone, setShowPostpone] = useState(false);
+  const [dataAmanare, setDataAmanare] = useState(task.deadline);
 
   return (
     <div className={`rounded-xl border-2 p-4 transition-all duration-200
@@ -94,8 +99,49 @@ export default function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCar
             className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-red-400 hover:bg-red-50 text-gray-500 hover:text-red-600 flex items-center justify-center text-base font-bold transition-colors"
             title="Sterge task"
           >×</button>
+          {!completed && task.recurrence && onSkip && (
+            <button
+              onClick={() => onSkip(task.id)}
+              className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-purple-400 hover:bg-purple-50 text-gray-500 hover:text-purple-600 flex items-center justify-center transition-colors"
+              title="Sari aceasta aparitie (seria continua)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path fillRule="evenodd" d="M4.5 3.5A1.5 1.5 0 016 2h1a1.5 1.5 0 011.5 1.5v13A1.5 1.5 0 017 18H6a1.5 1.5 0 01-1.5-1.5v-13zm7.146.646a.5.5 0 01.708 0l6 6a.5.5 0 010 .708l-6 6a.5.5 0 01-.708-.708L16.293 10l-5.647-5.646a.5.5 0 010-.708z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
+          {!completed && task.recurrence && onPostpone && (
+            <button
+              onClick={() => setShowPostpone(v => !v)}
+              className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-amber-400 hover:bg-amber-50 text-gray-500 hover:text-amber-600 flex items-center justify-center transition-colors"
+              title="Amana aceasta aparitie (seria continua neschimbata)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path fillRule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zM10 8a1 1 0 011 1v2.586l1.707 1.707a1 1 0 01-1.414 1.414l-2-2A1 1 0 019 12V9a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
+
+      {showPostpone && onPostpone && (
+        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+          <input
+            type="date"
+            value={dataAmanare}
+            onChange={e => setDataAmanare(e.target.value)}
+            className="text-xs border border-gray-300 rounded-lg px-2 py-1 flex-1"
+          />
+          <button
+            onClick={() => { onPostpone(task.id, dataAmanare); setShowPostpone(false); }}
+            className="text-xs font-semibold px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
+          >Amana</button>
+          <button
+            onClick={() => setShowPostpone(false)}
+            className="text-xs font-semibold px-2 py-1 text-gray-500 hover:text-gray-700"
+          >Anuleaza</button>
+        </div>
+      )}
     </div>
   );
 }

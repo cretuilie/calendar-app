@@ -10,6 +10,8 @@ interface TaskListProps {
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
   onAdauga: () => void;
+  onSkip: (id: string) => void;
+  onPostpone: (id: string, deadline: string) => void;
 }
 
 const LUNA_LUNGA = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie', 'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie'];
@@ -31,7 +33,7 @@ function formatDataGrup(dateStr: string): string {
   return `${ZI_SAPTAMANA[d.getDay()]} — ${zi} ${numeLuna}`;
 }
 
-export default function TaskList({ allTasks, dataSelectata, onComplete, onDelete, onEdit, onAdauga }: TaskListProps) {
+export default function TaskList({ allTasks, dataSelectata, onComplete, onDelete, onEdit, onAdauga, onSkip, onPostpone }: TaskListProps) {
   const azi = new Date(); azi.setHours(0, 0, 0, 0);
   const peste7 = new Date(azi); peste7.setDate(azi.getDate() + 6);
 
@@ -103,6 +105,8 @@ export default function TaskList({ allTasks, dataSelectata, onComplete, onDelete
                     onComplete={onComplete}
                     onDelete={onDelete}
                     onEdit={onEdit}
+                    onSkip={onSkip}
+                    onPostpone={onPostpone}
                   />
                 ))}
               </div>

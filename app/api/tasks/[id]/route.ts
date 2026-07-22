@@ -36,6 +36,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Data invalida' }, { status: 400 });
     }
     allowed.deadline = body.deadline;
+    // Editarea normala a datei muta si baza seriei (spre deosebire de amanare, care schimba doar aceasta aparitie)
+    allowed.series_deadline = body.deadline;
   }
   if (body.time !== undefined) {
     if (body.time !== null && !/^\d{2}:\d{2}$/.test(body.time)) {
@@ -78,14 +80,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   // Daca e marcat finalizat si are recurenta, creeaza urmatoarea aparitie
+  // (baza de calcul e series_deadline, nu deadline, ca o amanare a aparitiei curente sa nu deraieze seria)
   if (body.status === 'completed' && data.recurrence) {
+    const baza = data.series_deadline ?? data.deadline;
+    const urmatoarea = nextDeadline(baza, data.recurrence);
     await supabase.from('tasks').insert({
       title: data.title,
       description: data.description,
-      deadline: nextDeadline(data.deadline, data.recurrence),
+      deadline: urmatoarea,
       time: data.time,
       notify_days_before: data.notify_days_before,
       recurrence: data.recurrence,
+      series_deadline: urmatoarea,
       status: 'pending',
       user_id: data.user_id,
     });

@@ -10,6 +10,7 @@ export interface Task {
   status: TaskStatus;
   notify_days_before: number;
   recurrence: Recurrence;
+  series_deadline: string | null;
   created_at: string;
 }
 
