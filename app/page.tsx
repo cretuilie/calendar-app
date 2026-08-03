@@ -230,9 +230,8 @@ export default function Home() {
             })()}
 
             {!loading && (() => {
-              const todayStr = new Date().toISOString().split('T')[0];
               const completedTasks = tasks.filter(t => t.status === 'completed');
-              const overdueTasks = tasks.filter(t => isOverdue(t));
+              const overdueTasks = allTasks.filter(t => isOverdue(t));
               const pendingTasks = tasks.filter(t => t.status === 'pending' && !isOverdue(t));
               const listaVizibila = expandedStat === 'all' ? tasks
                 : expandedStat === 'completed' ? completedTasks

@@ -23,6 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
     }
     allowed.status = body.status;
+    allowed.completed_at = body.status === 'completed' ? new Date().toISOString() : null;
   }
   if (body.title !== undefined) {
     if (typeof body.title !== 'string' || body.title.trim().length === 0 || body.title.length > 200) {

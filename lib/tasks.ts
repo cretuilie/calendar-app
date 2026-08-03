@@ -11,6 +11,7 @@ export interface Task {
   notify_days_before: number;
   recurrence: Recurrence;
   series_deadline: string | null;
+  completed_at: string | null;
   created_at: string;
 }
 

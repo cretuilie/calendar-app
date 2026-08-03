@@ -19,6 +19,14 @@ function formatData(dateStr: string): string {
   return `${d} ${LUNA_SCURTA[m - 1]} ${y}`;
 }
 
+function formatDataOra(iso: string): string {
+  const d = new Date(iso);
+  const zi = d.getDate();
+  const luna = LUNA_SCURTA[d.getMonth()];
+  const ora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${zi} ${luna} ${d.getFullYear()}, ${ora}`;
+}
+
 function zilePanaLaDeadline(deadline: string): number {
   const azi = new Date();
   azi.setHours(0, 0, 0, 0);
@@ -75,6 +83,9 @@ export default function TaskCard({ task, onComplete, onDelete, onEdit, onSkip, o
               </span>
             )}
           </div>
+          {completed && task.completed_at && (
+            <p className="text-xs text-gray-400 mt-1.5">Finalizat pe {formatDataOra(task.completed_at)}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1 shrink-0">
