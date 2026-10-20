@@ -39,6 +39,7 @@ export default function TaskCard({ task, onComplete, onDelete, onEdit, onSkip, o
   const intarziat = zile < 0 && task.status === 'pending';
   const completed = task.status === 'completed';
   const [showPostpone, setShowPostpone] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [dataAmanare, setDataAmanare] = useState(task.deadline);
 
   return (
@@ -88,52 +89,71 @@ export default function TaskCard({ task, onComplete, onDelete, onEdit, onSkip, o
           )}
         </div>
 
-        <div className="flex flex-col gap-1 shrink-0">
+        <div className="flex flex-col gap-1 shrink-0 w-28">
           {!completed && (
             <button
               onClick={() => onComplete(task.id)}
-              className="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center text-sm font-bold transition-colors shadow-sm"
+              className="w-full h-8 px-2 gap-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-start transition-colors shadow-sm"
               title="Marcheaza ca finalizat"
-            >✓</button>
+            ><span className="text-sm font-bold">✓</span>Finalizeaza</button>
           )}
           <button
             onClick={() => onEdit(task)}
-            className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-indigo-400 hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 flex items-center justify-center transition-colors"
+            className="w-full h-8 px-2 gap-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 hover:border-indigo-400 hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 flex items-center justify-start transition-colors"
             title="Editeaza task"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
               <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
             </svg>
+            Editeaza
           </button>
           <button
-            onClick={() => onDelete(task.id)}
-            className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-red-400 hover:bg-red-50 text-gray-500 hover:text-red-600 flex items-center justify-center text-base font-bold transition-colors"
+            onClick={() => { setConfirmDelete(true); setShowPostpone(false); }}
+            className="w-full h-8 px-2 gap-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 hover:border-red-400 hover:bg-red-50 text-gray-500 hover:text-red-600 flex items-center justify-start transition-colors"
             title="Sterge task"
-          >×</button>
+          ><span className="text-base font-bold leading-none">×</span>Sterge</button>
           {!completed && task.recurrence && onSkip && (
             <button
               onClick={() => onSkip(task.id)}
-              className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-purple-400 hover:bg-purple-50 text-gray-500 hover:text-purple-600 flex items-center justify-center transition-colors"
+              className="w-full h-8 px-2 gap-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 hover:border-purple-400 hover:bg-purple-50 text-gray-500 hover:text-purple-600 flex items-center justify-start transition-colors"
               title="Sari aceasta aparitie (seria continua)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
                 <path fillRule="evenodd" d="M4.5 3.5A1.5 1.5 0 016 2h1a1.5 1.5 0 011.5 1.5v13A1.5 1.5 0 017 18H6a1.5 1.5 0 01-1.5-1.5v-13zm7.146.646a.5.5 0 01.708 0l6 6a.5.5 0 010 .708l-6 6a.5.5 0 01-.708-.708L16.293 10l-5.647-5.646a.5.5 0 010-.708z" clipRule="evenodd" />
               </svg>
+              Sari peste
             </button>
           )}
           {!completed && task.recurrence && onPostpone && (
             <button
               onClick={() => setShowPostpone(v => !v)}
-              className="w-8 h-8 rounded-lg border-2 border-gray-300 hover:border-amber-400 hover:bg-amber-50 text-gray-500 hover:text-amber-600 flex items-center justify-center transition-colors"
+              className="w-full h-8 px-2 gap-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 hover:border-amber-400 hover:bg-amber-50 text-gray-500 hover:text-amber-600 flex items-center justify-start transition-colors"
               title="Amana aceasta aparitie (seria continua neschimbata)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
                 <path fillRule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zM10 8a1 1 0 011 1v2.586l1.707 1.707a1 1 0 01-1.414 1.414l-2-2A1 1 0 019 12V9a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
+              Amana
             </button>
           )}
         </div>
       </div>
+
+      {confirmDelete && (
+        <div className="mt-3 pt-3 border-t border-red-100 flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-red-700 flex-1">
+            Stergi definitiv &quot;{task.title}&quot;?
+          </span>
+          <button
+            onClick={() => { onDelete(task.id); setConfirmDelete(false); }}
+            className="text-xs font-semibold px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+          >Da, sterge</button>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="text-xs font-semibold px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-lg"
+          >Nu</button>
+        </div>
+      )}
 
       {showPostpone && onPostpone && (
         <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">

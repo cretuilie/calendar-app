@@ -8,7 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [loading, setLoading] = useState(false);
   const [eroare, setEroare] = useState('');
   const [mesaj, setMesaj] = useState('');
@@ -27,7 +27,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      if (mode === 'login') {
+      if (mode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-parola`,
+        });
+        if (error) throw error;
+        setMesaj('Daca emailul are cont, ai primit un link pentru resetarea parolei. Verifica si Spam.');
+      } else if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         router.replace('/');
@@ -84,6 +90,7 @@ export default function LoginPage() {
               />
             </div>
 
+            {mode !== 'forgot' && (
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-1.5">Parola</label>
               <div className="relative">
@@ -115,6 +122,7 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+            )}
 
             {eroare && <p className="text-red-600 text-sm font-medium">{eroare}</p>}
             {mesaj && <p className="text-green-600 text-sm font-medium">{mesaj}</p>}
@@ -124,8 +132,22 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm mt-2"
             >
-              {loading ? 'Se proceseaza...' : mode === 'login' ? 'Conectare' : 'Creeaza cont'}
+              {loading ? 'Se proceseaza...' : mode === 'login' ? 'Conectare' : mode === 'forgot' ? 'Trimite link de resetare' : 'Creeaza cont'}
             </button>
+            {mode === 'login' && (
+              <button
+                type="button"
+                onClick={() => { setMode('forgot'); setEroare(''); setMesaj(''); }}
+                className="w-full text-center text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
+              >Am uitat parola</button>
+            )}
+            {mode === 'forgot' && (
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setEroare(''); setMesaj(''); }}
+                className="w-full text-center text-sm text-gray-600 hover:text-gray-900 font-semibold"
+              >Inapoi la conectare</button>
+            )}
           </form>
         </div>
       </div>
